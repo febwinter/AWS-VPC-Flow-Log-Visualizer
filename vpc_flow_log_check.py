@@ -28,7 +28,8 @@ create_flow_logs(**kwargs)
 '''
 import boto3
 import logging
-from copy import deepcopy
+from time import sleep
+from tqdm import tqdm
 import pandas as pd
 from glob import glob
 from botocore.exceptions import ClientError
@@ -58,17 +59,21 @@ def Read_Credential():
     
     for f in glob('*.csv'):
         data = pd.read_csv(f).values
-    
-    if data != None:
-        Access_Key = data[0][0]
-        Secret_Key = data[0][1]
-        S3_client = boto3.client('s3', aws_access_key_id=Access_Key, aws_secret_access_key=Secret_Key,region_name=Region)
-        VPC_client = boto3.client('ec2', aws_access_key_id=Access_Key, aws_secret_access_key=Secret_Key,region_name=Region)
-        print("자격증명 파일 확인 완료, 액세스 키 : {}\n".format(Access_Key))
-    else:
-        S3_client = boto3.client('s3', region_name=Region)
-        VPC_client = boto3.client('ec2', region_name=Region)
-        print("AWS CLI를 통해 자격증명 확인 완료\n")
+    try:
+        if data != None:
+            Access_Key = data[0][0]
+            Secret_Key = data[0][1]
+            S3_client = boto3.client('s3', aws_access_key_id=Access_Key, aws_secret_access_key=Secret_Key,region_name=Region)
+            VPC_client = boto3.client('ec2', aws_access_key_id=Access_Key, aws_secret_access_key=Secret_Key,region_name=Region)
+            print("자격증명 파일 확인 완료, 액세스 키 : {}\n".format(Access_Key))
+        else:
+            S3_client = boto3.client('s3', region_name=Region)
+            VPC_client = boto3.client('ec2', region_name=Region)
+            print("AWS CLI를 통해 자격증명 확인 완료\n")
+    except ClientError as e:
+        logging.error(e)
+        return False
+    return True
     
 def Selector(object_list:dict, object:str, resource:str):
     """
@@ -123,35 +128,33 @@ def Create_log(vpc, region=Region):
     """
     global VPC_client
     try:
-        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}',ResourceIds=[vpc])
+        VPC_client.create_flow_logs(ResourceIds=[vpc],ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}')
     except ClientError as e:
         logging.error(e)
         return False
     return True
-    
-# def Test_func(region=Region):
-    # global S3_client
-    # try:
-        # tempData = S3_client.get_bucket_inventory_configuration()
-        # print(tempData)
-    # except ClientError as e:
-        # logging.error(e)
-        # return False
-    # return True    
-    
+
+def Wait_for_mins():
+    print('Get Log Files... It will take 5m')
+    pbar = tqdm(total=100)
+    for i in range(100):
+        sleep(1)
+        pbar.update(0.3)
+    pbar.close()
+
 ####################################################################################################
 
 # Main Process 
 
 # Identify Credential & Get Information
-Region = Selector(Region_List, Region, "Region")
-Read_Credential()
-VPC = Selector(Get_VPC_info(), VPC, "VPC")
+# Region = Selector(Region_List, Region, "Region")
+# Read_Credential()
+# VPC = Selector(Get_VPC_info(), VPC, "VPC")
 
 # Start Main Process
-Create_bucket(Region)
-Create_log(Region)
-
+# Create_bucket(Region)
+# Create_log(Region)
+# Wait_for_mins()
 
 # Test Phase
 
