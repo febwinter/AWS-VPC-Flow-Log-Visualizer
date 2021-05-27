@@ -123,13 +123,22 @@ def Create_log(region=Region):
     """
     global VPC_client
     try:
-        VPC_client.create_flow_logs()
+        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}')
     except ClientError as e:
         logging.error(e)
         return False
     return True
     
-
+def Test_func(region=Region):
+    global S3_client
+    try:
+        tempData = S3_client.get_bucket_inventory_configuration()
+        print(tempData)
+    except ClientError as e:
+        logging.error(e)
+        return False
+    return True    
+    
 ####################################################################################################
 
 # Main Process 
@@ -137,8 +146,8 @@ def Create_log(region=Region):
 # Identify Credential & Get Information
 Region = Selector(Region_List, Region, "Region")
 Read_Credential()
-VPC = Selector(Get_VPC_info(), VPC, "VPC")
-
+# VPC = Selector(Get_VPC_info(), VPC, "VPC")
+Test_func()
 # Start Main Process
 # Create_bucket(Region)
 
