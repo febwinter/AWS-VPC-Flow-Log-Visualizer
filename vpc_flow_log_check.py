@@ -117,13 +117,13 @@ def Create_bucket(region=Region):
         return False
     return True
 
-def Create_log(region=Region):
+def Create_log(vpc, region=Region):
     """
     Create VPC Flow Log and stack logs in S3 bucket
     """
     global VPC_client
     try:
-        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}')
+        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}',ReasourceIds=[vpc])
     except ClientError as e:
         logging.error(e)
         return False
