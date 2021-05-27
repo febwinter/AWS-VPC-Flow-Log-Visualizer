@@ -68,10 +68,8 @@ def Read_Credential():
     else:
         S3_client = boto3.client('s3', region_name=Region)
         VPC_client = boto3.client('ec2', region_name=Region)
-        print("AWS CLI를 통해 자격증명 확인 완료\n"
+        print("AWS CLI를 통해 자격증명 확인 완료\n")
     
-    
-
 def Selector(object_list:dict, object:str, resource:str):
     """
     Select Module
