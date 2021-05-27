@@ -123,7 +123,7 @@ def Create_log(vpc, region=Region):
     """
     global VPC_client
     try:
-        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}',ReasourceIds=[vpc])
+        VPC_client.create_flow_logs(ResourceType='VPC',TrafficType='ALL',LogDestinationType='s3',LogDestination='arn:aws:s3:::py-flowlog-temp',LogFormat='${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status}',ResourceIds=[vpc])
     except ClientError as e:
         logging.error(e)
         return False
